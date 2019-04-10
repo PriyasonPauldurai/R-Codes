@@ -10,24 +10,31 @@ library(xgboost)
 install.packages("cowplot")
 library(cowplot)
 
+#To read the test File
 Test_file<- read.csv("Test_u94Q5KV.csv")
 View(Test_file)
 #observation: we have 11 variables
 
+#To read the Train File
 Train_file<-read.csv("Train_UWu5bXk.csv")
 View(Train_file)
 #observation: we have 12 variables out of which 11 are those independent variable and 1 is the target variable Item_Outlet_Sales
 
+#Verifying the variable names
 names(Train_file)
 names(Test_file)
 
+#Checking the data dimensions
 dim(Train_file) #result 8523 rows and 12 columns
 dim(Test_file) #result 5681 rows and 11 columns
 
 str(Train_file) #to check the variable types
 str(Test_file) #to check the variable types
 
+#Add the 12th variable to test file which we are going to predict and fill with NA
 Test_file$Item_Outlet_Sales<-NA
+
+#Row Bind Train and Test file for data cleaning
 Full_Set<-rbind(Train_file,Test_file) #Full_Setned two data sets for datapreparation
 
 #Visualization
@@ -37,16 +44,21 @@ ggplot(Train_file)+geom_histogram(aes(Train_file$Item_Outlet_Sales), binwidth = 
 
 #to find missing values
 summary(Full_Set)
+As we checked summary, below are the variables with blanks
+
 #Item_Weight= 2439 blanks
+
+#Ignore blanks on Item_Outlet_Sales as we filled with NA when binding.
 #Item_Outlet_Sales= 5681 blanks
-#find mean
+
+#find mean and median of Item_Weight
 Item_Weight.median<-median(Full_Set$Item_Weight,na.rm=TRUE)
 Item_Weight.mean<-mean(Full_Set$Item_Weight,na.rm=TRUE)
 
-#replace missing values with mean
+#impute missing values of Item_Weight with mean
 Full_Set[is.na(Full_Set$Item_Weight), "Item_Weight"]<-Item_Weight.mean
 
-#check if there is missing values
+#check again if there is missing values
 sum(is.na(Full_Set$Item_Weight))
 
 #visualize zeroes in Item_Visibility
@@ -54,10 +66,14 @@ ggplot(Full_Set) + geom_histogram(aes(Item_Visibility), bins = 100)
 
 #Finding zeroes
 summary(Full_Set$Item_Visibility==0)
+
+#Find Mean
 Item_Visibility_Mean<-mean(Full_Set$Item_Visibility,na.rm=TRUE)
 
-#replace zeroes is Item Visibiluty with mean
+#replace zeroes is Item Visibility with mean
 Full_Set$Item_Visibility[which(Full_Set$Item_Visibility==0)] <-0.06595278
 
 #Revisualize
 ggplot(Full_Set) + geom_histogram(aes(Item_Visibility), bins = 100)
+
+
